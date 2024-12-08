@@ -1,0 +1,150 @@
+<!DOCTYPE html>
+<html xmlns:th="http://www.thymeleaf.org">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Interactive Chat</title>
+    <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
+    <style>
+        body {
+            background-color: #1a202c;
+            color: #f1f5f9;
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+        }
+        .chat-container {
+            max-width: 700px;
+            margin: auto;
+            background-color: #2d3748;
+            border-radius: 10px;
+            box-shadow: 0 8px 16px rgba(0, 0, 0, 0.4);
+            padding: 20px;
+            margin-top: 30px;
+            overflow: hidden;
+        }
+        .chat-box {
+            height: 400px;
+            overflow-y: auto;
+            border: 1px solid #4a5568;
+            border-radius: 8px;
+            padding: 20px;
+            background-color: #2b313a;
+            margin-bottom: 20px;
+        }
+        .chat-message {
+            margin-bottom: 15px;
+        }
+        .chat-message.user {
+            text-align: right;
+        }
+        .chat-message.user span {
+            background-color: #4c9bdb;
+            color: white;
+            padding: 12px 18px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .chat-message.bot span {
+            background-color: #3b4a56;
+            color: #f1f5f9;
+            padding: 12px 18px;
+            border-radius: 20px;
+            display: inline-block;
+        }
+        .input-container {
+            display: flex;
+            align-items: center;
+            margin-top: 20px;
+        }
+        .input-container input {
+            flex: 1;
+            border: 1px solid #4a5568;
+            border-radius: 25px;
+            padding: 10px 15px;
+            margin-right: 10px;
+            background-color: #2b313a;
+            color: #f1f5f9;
+            font-size: 1rem;
+        }
+        .input-container button {
+            background-color: #4c9bdb;
+            color: white;
+            border: none;
+            border-radius: 25px;
+            padding: 10px 20px;
+            cursor: pointer;
+            transition: background-color 0.3s ease;
+        }
+        .input-container button:hover {
+            background-color: #3182ce;
+        }
+        .chat-box::-webkit-scrollbar {
+            width: 8px;
+        }
+        .chat-box::-webkit-scrollbar-thumb {
+            background-color: #4a5568;
+            border-radius: 5px;
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="chat-container">
+            <h3 class="text-center text-light mb-4">Interactive AI Chat With Ollama</h3>
+            <div class="chat-box" id="chatBox">
+                <!-- Existing chat messages will go here -->
+            </div>
+            <form id="chatForm" class="input-container">
+                <input type="text" id="userInput" placeholder="Type your message..." required>
+                <button type="submit">Send</button>
+            </form>
+        </div>
+    </div>
+
+    <!-- Add custom JavaScript -->
+    <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
+    <script>
+        $(document).ready(function () {
+            const chatBox = $('#chatBox');
+
+            // Handle form submission
+            $('#chatForm').submit(function (event) {
+                event.preventDefault();
+
+                // Get user input
+                const userInput = $('#userInput').val();
+                if (!userInput.trim()) return;
+
+                // Append user's message to the chat box
+                const userMessage = $('<div class="chat-message user"></div>');
+                userMessage.html(`<span>${userInput}</span>`);
+                chatBox.append(userMessage);
+
+                // Clear input field
+                $('#userInput').val('');
+
+                // Scroll to the bottom
+                chatBox.scrollTop(chatBox[0].scrollHeight);
+
+                // Send user input to the backend and handle the response
+                $.ajax({
+                    type: 'POST',
+                    url: '/submit', // Endpoint for submitting the user input
+                    data: { userInput: userInput },
+                    success: function (botResponse) {
+                        // Append bot's message to the chat box
+                        const botMessage = $('<div class="chat-message bot"></div>');
+                        botMessage.html(`<span>${botResponse}</span>`);
+                        chatBox.append(botMessage);
+
+                        // Scroll to the bottom
+                        chatBox.scrollTop(chatBox[0].scrollHeight);
+                    },
+                    error: function () {
+                        alert('Error occurred while communicating with the server.');
+                    }
+                });
+            });
+        });
+    </script>
+</body>
+</html>
